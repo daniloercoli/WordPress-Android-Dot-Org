@@ -1,0 +1,32 @@
+name: SBOM scan (POC)
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate SBOM & scan
+        id: scan
+        uses: sbom-sh/create@v1
+        with:
+          api-key: ${{ secrets.SBOM_API_KEY }}
+          repository-path: .
+          output-format: json
+
+      - name: Post results to POC webhook
+        env:
+          WEBHOOK_URL: ${{ secrets.WEBHOOK_URL }}
+          WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
+        run: |
+          echo "\nSending results to $WEBHOOK_URL";
+          echo "${{ steps.scan.outputs.results }}" > sbom.json
+          curl -sSL -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -H "X-Hub-Signature-256: sha256=$(echo -n $(cat sbom.json) | openssl dgst -sha256 -hmac "$WEBHOOK_SECRET" | cut -d' ' -f2)" \
+            --data @sbom.json
