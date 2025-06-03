@@ -17,7 +17,7 @@ Notes:
 
 * While loading/building the app in Android Studio, ignore the prompt to update the Gradle plugin version, as that will probably introduce build errors. On the other hand, feel free to update if you are planning to work on ensuring the compatibility of the newer version.
 
-## Build and Test ##
+## Build & Test ##
 
 To build, install, and test the project from the command line:
 
